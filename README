@@ -1,134 +1,55 @@
-# NetDiff: A Router Snapshot Tool
+# ConfigSnap: A Network Configuration Snapshot Tool
 
-## Overview
+**Introduction**
 
-**NetDiff** is a Python-based web service designed to manage and monitor router configurations. It supports multiple router operating systems, including Cisco IOS, Cisco IOS XR, Arista EOS, IOS-XE, and Cisco NX-OS. NetDiff captures snapshots of router configurations at user-defined intervals and provides APIs for manual snapshots, viewing recent snapshots, and comparing configurations.
+ConfigSnap is a powerful tool designed to simplify the process of capturing and managing network device configurations. Built on the FastAPI framework, ConfigSnap provides a user-friendly API for automating snapshotting tasks and integrating with existing automation workflows. 
 
-## Features
+**Key Features**
 
-- **Automatic Snapshots**: Periodically captures router configurations based on a defined frequency.
-- **Manual Snapshots**: Allows users to trigger snapshots on demand via an API.
-- **Snapshot Management**: Provides access to the last 5 snapshots for a given device.
-- **Snapshot Comparison**: Compares the last two snapshots and highlights configuration differences.
-- **Configurable Port**: Allows you to specify the port for the web service.
-- **Detailed Logging**: Logs operations and errors with timestamped filenames.
+* **FastAPI-Based API:** Enjoy the benefits of a high-performance, asynchronous API for efficient configuration management.
+* **Automatic and Manual Snapshots:** Capture network device configurations at regular intervals or on demand.
+* **Scheduled Snapshots:** Set up recurring snapshot schedules to ensure consistent configuration tracking.
+* **Running Config Capture:** Capture the current running configuration of network devices.
+* **Auto and Manual Configuration Capture:** Capture both auto and manual configurations.
+* **Netmiko Device Type Mapping:** ConfigSnap supports a wide range of network devices by automatically mapping device types to Netmiko-compatible classes.
 
-## Directory Structure
+**Installation**
 
-```
-NetDiff/
-├── main.py                  # Main script to run the service
-├── config/
-│   ├── config.json          # Configuration file with settings
-│   ├── devices.txt          # List of devices to manage
-│   └── swagger.yaml         # Swagger file for API documentation
-├── snapshots/               # Directory for storing snapshots
-└── logs/                    # Directory for storing log files
-```
+1. **Prerequisites:** Ensure you have Python installed (version 3.6 or later) and the required dependencies listed in the `requirements.txt` file.
+2. **Clone the Repository:** Clone the ConfigSnap repository from GitHub: `git clone https://github.com/sachin0987/ConfigSnap.git`
+3. **Install Dependencies:** Navigate to the project directory and run `pip install -r requirements.txt` to install the necessary dependencies.
 
-## Configuration
+**Configuration**
 
-### `config/config.json`
+* **Device Configuration:** Create a YAML file (`devices.yaml`) to define device groups and their corresponding IP addresses.
+* **Credentials:** Create a JSON file (`credentials.json`) to store device credentials (e.g., username, password, enable password).
+* **Commands:** Create a JSON file (`commands.json`) to specify the commands that will be executed on the devices to capture their configurations.
+* **Configuration File:** Modify the `config.json` file to set the appropriate values for the `log_dir`, `snapshot_dir`, `device_type_mapping`, `devices_file`, `credentials_file`, `commands_file`, and `auto_snapshot_frequency`.
 
-The configuration file defines settings for the tool. Modify the following fields:
+**Running the Tool**
 
-- `username`: Your router's username.
-- `password`: Your router's password.
-- `snapshot_directory`: Directory where snapshots will be stored.
-- `snapshot_frequency`: Frequency (in minutes) for automatic snapshots.
-- `port`: Port number for the Flask application.
+1. **Start the FastAPI Server:** Run the following command to start the ConfigSnap server: `uvicorn main:app --reload`
+2. **Access the API:** The API will be available at the specified URL (usually `http://127.0.0.1:8000`).
 
-Example:
-```json
-{
-  "username": "your_username",
-  "password": "your_password",
-  "snapshot_directory": "snapshots",
-  "snapshot_frequency": 60,
-  "port": 5000
-}
-```
+**API Endpoints**
 
-### `config/devices.txt`
+* **`/snapshot/{device_ip}` (POST):** Triggers a manual snapshot for a specific device.
+* **`/snapshots/{device_ip}` (GET):** Returns a list of available snapshot files for a specific device.
+* **`/diff/{device_ip}` (GET):** Generates a diff between the two most recent snapshots for a specific device.
+* **`/schedule-snapshot` (POST):** Starts the automatic snapshot scheduling.
+* **`/stop-snapshot` (POST):** Stops the automatic snapshot scheduling.
 
-List the IP addresses of devices to manage, each on a new line.
+**Usage**
 
-Example:
-```
-192.168.1.1
-192.168.1.2
-```
+1. **Manual Snapshots:** Use the API endpoints to manually trigger snapshots for specific devices.
+2. **Scheduled Snapshots:** Configure the `auto_snapshot_frequency` in the `config.json` file to automatically take snapshots at regular intervals.
 
-### `config/swagger.yaml`
+**Contributing**
 
-This file contains the Swagger API documentation. Update or extend this file based on the API endpoints and descriptions.
+We welcome contributions to ConfigSnap! Please refer to our [CONTRIBUTING.md] file for guidelines on how to report issues, submit pull requests, and contribute to the project.
 
-## API Endpoints
+**License**
 
-- **Manual Snapshot**
-  - **Endpoint**: `/snapshot/<device_ip>`
-  - **Method**: `POST`
-  - **Description**: Take a manual snapshot of the specified device. Regardless of the commit status, a snapshot will be taken.
+ConfigSnap is released under the [MIT License](https://opensource.org/licenses/MIT).
 
-- **Get Snapshots**
-  - **Endpoint**: `/snapshots/<device_ip>`
-  - **Method**: `GET`
-  - **Description**: Retrieve the list of the last 5 snapshots for the specified device.
-
-- **Compare Snapshots**
-  - **Endpoint**: `/compare/<device_ip>`
-  - **Method**: `GET`
-  - **Description**: Compare the last two snapshots of the specified device and show the differences.
-
-## Installation
-
-1. **Install Dependencies**:
-
-   Ensure you have Python and `pip` installed, then install the required libraries:
-
-   ```bash
-   pip install flask netmiko schedule pyyaml flasgger
-   ```
-
-2. **Create Directories**:
-
-   Create the necessary directories for snapshots and logs:
-
-   ```bash
-   mkdir snapshots logs
-   ```
-
-3. **Configure the Tool**:
-
-   Update the `config/config.json` and `config/devices.txt` files with your settings and device information.
-
-4. **Run the Script**:
-
-   Start the web service and schedule automatic snapshots:
-
-   ```bash
-   python main.py
-   ```
-
-## Usage
-
-- **Access the Web Service**: The service will be available at `http://<your_server_ip>:<port>`.
-- **API Requests**: Use the provided API endpoints to manage snapshots and view comparisons.
-
-## Logging
-
-Logs are saved in the `logs` directory with filenames that include timestamps. Check these logs for detailed information about snapshot operations and any errors encountered.
-
-## Troubleshooting
-
-- **Internal Server Error**: Check the log files in the `logs` directory for details.
-- **Connection Issues**: Ensure that the router IP addresses and credentials are correct and that the tool can reach the routers.
-
-## License
-
-This tool is provided "as-is" without any warranties. Feel free to use and modify it according to your needs.
-
-## Contributions
-
-If you have suggestions, improvements, or bug fixes, feel free to submit a pull request or contact to me.
-
+Note: Contributors are most welcome

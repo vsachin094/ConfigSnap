@@ -1,0 +1,7 @@
+nxos_devices:
+  - sbx-nxos-mgmt.cisco.com
+
+default:
+  - 131.226.217.151
+
+  

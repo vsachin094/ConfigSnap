@@ -1,0 +1,134 @@
+# NetDiff: A Router Snapshot Tool
+
+## Overview
+
+**NetDiff** is a Python-based web service designed to manage and monitor router configurations. It supports multiple router operating systems, including Cisco IOS, Cisco IOS XR, Arista EOS, IOS-XE, and Cisco NX-OS. NetDiff captures snapshots of router configurations at user-defined intervals and provides APIs for manual snapshots, viewing recent snapshots, and comparing configurations.
+
+## Features
+
+- **Automatic Snapshots**: Periodically captures router configurations based on a defined frequency.
+- **Manual Snapshots**: Allows users to trigger snapshots on demand via an API.
+- **Snapshot Management**: Provides access to the last 5 snapshots for a given device.
+- **Snapshot Comparison**: Compares the last two snapshots and highlights configuration differences.
+- **Configurable Port**: Allows you to specify the port for the web service.
+- **Detailed Logging**: Logs operations and errors with timestamped filenames.
+
+## Directory Structure
+
+```
+NetDiff/
+├── main.py                  # Main script to run the service
+├── config/
+│   ├── config.json          # Configuration file with settings
+│   ├── devices.txt          # List of devices to manage
+│   └── swagger.yaml         # Swagger file for API documentation
+├── snapshots/               # Directory for storing snapshots
+└── logs/                    # Directory for storing log files
+```
+
+## Configuration
+
+### `config/config.json`
+
+The configuration file defines settings for the tool. Modify the following fields:
+
+- `username`: Your router's username.
+- `password`: Your router's password.
+- `snapshot_directory`: Directory where snapshots will be stored.
+- `snapshot_frequency`: Frequency (in minutes) for automatic snapshots.
+- `port`: Port number for the Flask application.
+
+Example:
+```json
+{
+  "username": "your_username",
+  "password": "your_password",
+  "snapshot_directory": "snapshots",
+  "snapshot_frequency": 60,
+  "port": 5000
+}
+```
+
+### `config/devices.txt`
+
+List the IP addresses of devices to manage, each on a new line.
+
+Example:
+```
+192.168.1.1
+192.168.1.2
+```
+
+### `config/swagger.yaml`
+
+This file contains the Swagger API documentation. Update or extend this file based on the API endpoints and descriptions.
+
+## API Endpoints
+
+- **Manual Snapshot**
+  - **Endpoint**: `/snapshot/<device_ip>`
+  - **Method**: `POST`
+  - **Description**: Take a manual snapshot of the specified device. Regardless of the commit status, a snapshot will be taken.
+
+- **Get Snapshots**
+  - **Endpoint**: `/snapshots/<device_ip>`
+  - **Method**: `GET`
+  - **Description**: Retrieve the list of the last 5 snapshots for the specified device.
+
+- **Compare Snapshots**
+  - **Endpoint**: `/compare/<device_ip>`
+  - **Method**: `GET`
+  - **Description**: Compare the last two snapshots of the specified device and show the differences.
+
+## Installation
+
+1. **Install Dependencies**:
+
+   Ensure you have Python and `pip` installed, then install the required libraries:
+
+   ```bash
+   pip install flask netmiko schedule pyyaml flasgger
+   ```
+
+2. **Create Directories**:
+
+   Create the necessary directories for snapshots and logs:
+
+   ```bash
+   mkdir snapshots logs
+   ```
+
+3. **Configure the Tool**:
+
+   Update the `config/config.json` and `config/devices.txt` files with your settings and device information.
+
+4. **Run the Script**:
+
+   Start the web service and schedule automatic snapshots:
+
+   ```bash
+   python main.py
+   ```
+
+## Usage
+
+- **Access the Web Service**: The service will be available at `http://<your_server_ip>:<port>`.
+- **API Requests**: Use the provided API endpoints to manage snapshots and view comparisons.
+
+## Logging
+
+Logs are saved in the `logs` directory with filenames that include timestamps. Check these logs for detailed information about snapshot operations and any errors encountered.
+
+## Troubleshooting
+
+- **Internal Server Error**: Check the log files in the `logs` directory for details.
+- **Connection Issues**: Ensure that the router IP addresses and credentials are correct and that the tool can reach the routers.
+
+## License
+
+This tool is provided "as-is" without any warranties. Feel free to use and modify it according to your needs.
+
+## Contributions
+
+If you have suggestions, improvements, or bug fixes, feel free to submit a pull request or contact to me.
+

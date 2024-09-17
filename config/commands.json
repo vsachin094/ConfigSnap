@@ -1,0 +1,22 @@
+{
+  "ios_devices": [
+    "show running-config",
+    "show version"
+  ],
+  "nxos_devices": [
+    "show running-config",
+    "show version"
+  ],
+  "xr_devices": [
+    "show running-config",
+    "show version"
+  ],
+  "arista_devices": [
+    "show running-config",
+    "show version"
+  ],
+  "default": [
+    "show running-config",
+    "show version"
+  ]
+}

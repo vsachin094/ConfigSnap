@@ -130,6 +130,19 @@ async def schedule_snapshot():
     scheduler_thread.daemon = True  # Ensure it exits when the main thread does
     scheduler_thread.start()
 
+
+def clean_and_check_changes(data_dict):
+    # Clean the values in each list (remove spaces, newlines)
+    cleaned_data = {
+        key: [value.replace('\n', '').strip() for value in values if value.replace('\n', '').strip()]
+        for key, values in data_dict.items()
+    }
+
+    # Check if all lists are empty after cleaning
+    if all(len(v) == 0 for v in cleaned_data.values()):
+        return "no changes detected on the device"
+    
+    return cleaned_data
 # APIs for snapshot functionality
 
 @app.post("/snapshot/{device_ip}")
@@ -139,18 +152,37 @@ def manual_snapshot(device_ip: str):
 
 @app.get("/snapshots/{device_ip}")
 def get_snapshots(device_ip: str):
-    snapshots = [f for f in os.listdir(snapshot_dir) if device_ip in f]
+    snapshots = [f for f in os.listdir(snapshot_dir) if device_ip in f][:10]
     return {"snapshots": snapshots}
 
-@app.get("/diff/{device_ip}")
+
+@app.get("/diff/<string:device_ip>")
 def diff_snapshots(device_ip: str):
     snapshots = sorted([f for f in os.listdir(snapshot_dir) if device_ip in f], reverse=True)
     if len(snapshots) < 2:
         return {"status": "error", "message": "Not enough snapshots to generate a diff."}
-    
+
     with open(os.path.join(snapshot_dir, snapshots[0]), 'r') as f1, open(os.path.join(snapshot_dir, snapshots[1]), 'r') as f2:
-        diff = list(difflib.unified_diff(f1.readlines(), f2.readlines()))
-    return {"status": "success", "diff": ''.join(diff)}
+        diff = list(difflib.unified_diff(f2.readlines(), f1.readlines()))
+
+    # Parse the diff and extract changes in JSON format
+    changes = {
+        "added": [],
+        "removed": [],
+        "updated": []
+    }
+    for line in diff:
+        if line.startswith('+'):
+            changes["added"].append(line.strip('+'))
+        elif line.startswith('-'):
+            changes["removed"].append(line.strip('-'))
+        elif line.startswith('?'):
+            changes["updated"].append(line.strip('?'))
+
+    if not any(changes.values()):
+        return {"status": "success", "changes": "no changes detected on the device"}
+
+    return {"status": "success", "changes": clean_and_check_changes(changes)}
 
 @app.post("/schedule-snapshot")
 async def schedule_snapshot_endpoint(background_tasks: BackgroundTasks):

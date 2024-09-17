@@ -7,17 +7,11 @@ venv/
 .env/
 
 # Logs
-logs/
 *.log
 
 # Snapshots
-snapshots/
+snapshots/*.txt
 
-# Configuration files (if sensitive information is included)
-config/config.json
-
-# Swagger documentation
-config/swagger.yaml
 
 # IDE/editor-specific files
 .vscode/

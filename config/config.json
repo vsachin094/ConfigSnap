@@ -1,0 +1,16 @@
+{
+  "log_dir": "logs",
+  "snapshot_dir": "snapshots",
+  "device_type_mapping": {
+      "ios_devices": "cisco_ios",
+      "nxos_devices": "cisco_nxos",
+      "xr_devices": "cisco_iosxr",
+      "arista_devices": "arista",
+      "default": "autodetect"
+  },
+  "devices_file": "config/devices.yaml",
+  "credentials_file": "config/credentials.json", 
+  "secure_credentials_file": "config/encrypted_credentials.json",
+  "commands_file": "config/commands.json",
+  "auto_snapshot_frequency": 5
+}

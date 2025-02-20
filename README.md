@@ -46,7 +46,7 @@ ConfigSnap is a powerful tool designed to simplify the process of capturing and 
 
 **Contributing**
 
-We welcome contributions to ConfigSnap! Please refer to our [CONTRIBUTING.md] file for guidelines on how to report issues, submit pull requests, and contribute to the project.
+We welcome contributions to ConfigSnap! Please report issues, submit pull requests, and contribute to the project.
 
 **License**
 

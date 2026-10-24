@@ -1,55 +1,79 @@
-# ConfigSnap: A Network Configuration Snapshot Tool
+# ConfigSnap
 
-**Introduction**
+ConfigSnap is a FastAPI service for capturing network-device configuration snapshots, listing them, and comparing the two latest snapshots.
 
-ConfigSnap is a powerful tool designed to simplify the process of capturing and managing network device configurations. Built on the FastAPI framework, ConfigSnap provides a user-friendly API for automating snapshotting tasks and integrating with existing automation workflows. 
+## Features
 
-**Key Features**
+- On-demand snapshots for configured devices
+- Automatic snapshots on a configurable interval
+- Snapshot listing and configuration diffs
+- Netmiko device-type mapping and SSH autodetection
+- API-key protection for snapshot and scheduler endpoints
 
-* **FastAPI-Based API:** Enjoy the benefits of a high-performance, asynchronous API for efficient configuration management.
-* **Automatic and Manual Snapshots:** Capture network device configurations at regular intervals or on demand.
-* **Scheduled Snapshots:** Set up recurring snapshot schedules to ensure consistent configuration tracking.
-* **Running Config Capture:** Capture the current running configuration of network devices.
-* **Auto and Manual Configuration Capture:** Capture both auto and manual configurations.
-* **Netmiko Device Type Mapping:** ConfigSnap supports a wide range of network devices by automatically mapping device types to Netmiko-compatible classes.
+## Requirements
 
-**Installation**
+- Python 3.9 or later
+- SSH access to the network devices you configure
 
-1. **Prerequisites:** Ensure you have Python installed (version 3.6 or later) and the required dependencies listed in the `requirements.txt` file.
-2. **Clone the Repository:** Clone the ConfigSnap repository from GitHub: `git clone https://github.com/sachin0987/ConfigSnap.git`
-3. **Install Dependencies:** Navigate to the project directory and run `pip install -r requirements.txt` to install the necessary dependencies.
+## Installation
 
-**Configuration**
+```bash
+git clone https://github.com/vsachin094/ConfigSnap.git
+cd ConfigSnap
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp config/devices.example.yaml config/devices.yaml
+cp config/credentials.example.json config/credentials.json
+```
 
-* **Device Configuration:** Create a YAML file (`devices.yaml`) to define device groups and their corresponding IP addresses.
-* **Credentials:** Create a JSON file (`credentials.json`) to store device credentials (e.g., username, password, enable password).
-* **Commands:** Create a JSON file (`commands.json`) to specify the commands that will be executed on the devices to capture their configurations.
-* **Configuration File:** Modify the `config.json` file to set the appropriate values for the `log_dir`, `snapshot_dir`, `device_type_mapping`, `devices_file`, `credentials_file`, `commands_file`, and `auto_snapshot_frequency`.
+Edit `config/devices.yaml` and `config/credentials.json` for your environment. The example inventory uses documentation-only IP addresses and the example credentials are placeholders; replace both before use. These local files are ignored by Git.
 
-**Running the Tool**
+Set an API key of at least 32 characters. For example, generate one with:
 
-1. **Start the FastAPI Server:** Run the following command to start the ConfigSnap server: `uvicorn main:app --reload`
-2. **Access the API:** The API will be available at the specified URL (usually `http://127.0.0.1:8000`).
+```bash
+export CONFIGSNAP_API_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+```
 
-**API Endpoints**
+The key must be set in the environment of the server process. ConfigSnap fails closed with HTTP 503 if it is missing or too short; requests without the matching `X-API-Key` header receive HTTP 401.
 
-* **`/snapshot/{device_ip}` (POST):** Triggers a manual snapshot for a specific device.
-* **`/snapshots/{device_ip}` (GET):** Returns a list of available snapshot files for a specific device.
-* **`/diff/{device_ip}` (GET):** Generates a diff between the two most recent snapshots for a specific device.
-* **`/schedule-snapshot` (POST):** Starts the automatic snapshot scheduling.
-* **`/stop-snapshot` (POST):** Stops the automatic snapshot scheduling.
+`config/config.json` contains the device-type mapping, file paths, and snapshot frequency in minutes. The scheduler starts automatically with the application.
 
-**Usage**
+## Run
 
-1. **Manual Snapshots:** Use the API endpoints to manually trigger snapshots for specific devices.
-2. **Scheduled Snapshots:** Configure the `auto_snapshot_frequency` in the `config.json` file to automatically take snapshots at regular intervals.
+From the `ConfigSnap` directory, start the service bound to the local machine:
 
-**Contributing**
+```bash
+uvicorn configsnap:app --host 127.0.0.1 --port 8000
+```
 
-We welcome contributions to ConfigSnap! Please report issues, submit pull requests, and contribute to the project.
+The API is available at `http://127.0.0.1:8000`; interactive documentation is at `/docs`. For remote access, put the service behind a TLS-terminating reverse proxy and restrict network access. Do not expose the service directly to an untrusted network. If you intentionally bind to a non-loopback interface, retain API-key protection and configure firewall and TLS controls.
 
-**License**
+## API
 
-ConfigSnap is released under the [MIT License](https://opensource.org/licenses/MIT).
+All operational endpoints require the `X-API-Key` request header:
 
-Note: Contributors are most welcome
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/snapshot/{device_ip}` | Capture a snapshot for a configured device |
+| `GET` | `/snapshots/{device_ip}` | List up to 10 recent snapshots |
+| `GET` | `/diff/{device_ip}` | Compare the two most recent snapshots |
+| `POST` | `/schedule-snapshot` | Start automatic snapshots if stopped |
+| `POST` | `/stop-snapshot` | Stop future automatic snapshots |
+
+Example:
+
+```bash
+curl -H "X-API-Key: $CONFIGSNAP_API_KEY" \
+  -X POST http://127.0.0.1:8000/snapshot/192.0.2.10
+```
+
+Snapshots contain device configuration data and may include sensitive information. Protect the snapshot directory with appropriate filesystem permissions, backups, and retention policies. Never commit real credentials, device inventories, snapshots, or API keys.
+
+## Contributing
+
+Bug reports and pull requests are welcome. Please do not include real device credentials, device configuration output, or other sensitive information in issues or pull requests.
+
+## License
+
+ConfigSnap is distributed under the [MIT License](./LICENSE).

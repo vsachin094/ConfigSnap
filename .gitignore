@@ -4,13 +4,20 @@ __pycache__/
 
 # Virtual environment
 venv/
+.venv/
 .env/
 
 # Logs
 *.log
+logs/
 
 # Snapshots
-snapshots/*.txt
+snapshots/
+
+# Local device inventory and credentials
+/config/devices.yaml
+/config/credentials.json
+/config/encrypted_credentials.json
 
 
 # IDE/editor-specific files
